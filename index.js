@@ -2,7 +2,13 @@
 
 let user = {
     login: "blabla",
-    password: "blablabla"
+    password: {
+        salt: {
+            sha1: "dksjfiasjor",
+            md5: "olkotmdi36plf"
+        },
+        phrase: "12345"
+    }
 }
 
 // {
@@ -20,7 +26,8 @@ let jsonUser = JSON.stringify(user);
 console.log(jsonUser);
 let userDecode = JSON.parse(jsonUser);
 console.log(userDecode.login);
-console.log(userDecode["password"]);
+console.log(userDecode["password"]["salt"]["md5"]);
+console.log(userDecode.password.phrase)
 
 // AJAX - Async Javascript And Xml
 // 1) fetch
@@ -34,7 +41,7 @@ let book = {
     title: "Spark of Life"
 };
 
-let httpRequest = async function() {
+let httpRequest = async function () {
     let response = await fetch(baseApiUrl);
     let result = await response.json();
     for (let i = 0; i < result.length; i++) {
@@ -56,37 +63,74 @@ let httpRequest = async function() {
     console.log(resultPost);
 };
 
-let httpRequestPromise = fetch(baseApiUrl);
-httpRequestPromise.then(response => {
-    return response.json()
-})
-    .then(result => {
-        for (let i = 0; i < result.length; i++) {
-            let div = document.createElement('div');
-            div.textContent = result[i].author + ' : ' + result[i].title;
-            document.getElementById('content').append(div);
+// let httpRequestPromise = fetch(baseApiUrl);
+// httpRequestPromise
+//     .then(response => {
+//         return response.json();
+//     })
+//     .then(result => {
+//         for (let i = 0; i < result.length; i++) {
+//             let div = document.createElement('div');
+//             div.textContent = result[i].author + ' : ' + result[i].title;
+//             document.getElementById('content').append(div);
+//         }
+//     })
+
+// let xhr = new XMLHttpRequest();
+// xhr.open('GET', baseApiUrl);
+// // xhr.open('POST', baseApiUrl)
+// xhr.onload = function () {
+//     let result = JSON.parse(xhr.responseText);
+//     // console.log(result);
+//     result = deleteDuplicate(result);
+//     result = sort();
+//     for (let i = 0; i < result.length; i++) {
+//         let div = document.createElement('div');
+//         div.textContent = result[i].author + ' : ' + result[i].title;
+//         document.getElementById('content').append(div);
+//     }
+// }
+// xhr.onerror = function () {
+//     console.log('error');
+// }
+// xhr.send();
+// // xhr.send(JSON.stringify(book));
+
+let xhrPromise = new Promise(function (resolve, reject) {
+    let xhr = new XMLHttpRequest();
+    xhr.open('GET', baseApiUrl);
+    xhr.onload = function () {
+        if (xhr.status !== 200) {
+            reject('error');
         }
-    })
-
-let xhr = new XMLHttpRequest();
-xhr.open('GET', baseApiUrl);
-// xhr.open('POST', baseApiUrl)
-xhr.onload = function () {
-    let result = JSON.parse(xhr.responseText);
-    // console.log(result);
-    for (let i = 0; i < result.length; i++) {
-        let div = document.createElement('div');
-        div.textContent = result[i].author + ' : ' + result[i].title;
-        document.getElementById('content').append(div);
+        resolve(JSON.parse(xhr.responseText));
     }
-}
-xhr.onerror = function () {
-    console.log('error');
-}
-xhr.send();
-// xhr.send(JSON.stringify(book));
+    xhr.onerror = function () {
+        reject('error');
+    }
+    xhr.send();
+});
 
-httpRequest();
+xhrPromise
+    // .then(result => {
+    //     return deleteDuplicate(result);
+    // })
+    // .then(uniqueBooks => {
+    //     return sort(uniqueBooks);
+    // })
+    .then(result => {
+            for (let i = 0; i < result.length; i++) {
+                let div = document.createElement('div');
+                div.textContent = result[i].author + ' : ' + result[i].title;
+                document.getElementById('content').append(div);
+            }
+        },
+        error => {
+            console.log(error)
+        }
+    )
+
+// httpRequest();
 // UNSENT = 0
 // OPENED = 1
 // HEADERS_RECEIVED = 2
@@ -101,13 +145,17 @@ httpRequest();
 
 let promise = new Promise(function (resolve, reject) {
     setTimeout(() => {
-        resolve("ok");
-    }, 1000);
+        reject("error");
+    }, 3000);
     setTimeout(() => {
         resolve("ok 2");
     }, 2000)
 });
 
 promise.then(result => {
-    console.log(result);
-})
+        console.log(result);
+    },
+    error => {
+        console.log(error)
+    }
+)
